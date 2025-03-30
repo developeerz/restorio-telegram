@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/developeerz/restorio-telegram/config"
@@ -39,23 +38,10 @@ func (bot *TelegramBot) StartPolling() {
 
 		switch update.Message.Text {
 		case "/start":
-			msg := tele.NewMessage(update.Message.Chat.ID, "Добро пожаловать в Restorio!")
-			bot.Bot.Send(msg)
+			bot.cmdStart(&update)
 
 		case "Получить код":
-			telegram := update.Message.From.UserName
-			telegramID := update.Message.From.ID
-
-			code, err := bot.UserRepository.GetCodeByTelegram(telegram)
-			if err != nil {
-				msg := tele.NewMessage(update.Message.Chat.ID, "Вы уже зарегистрированы!")
-				bot.Bot.Send(msg)
-				continue
-			}
-
-			bot.UserRepository.UpdateUserByTelegram(telegram, telegramID)
-			msg := tele.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ваш код: %d", code))
-			bot.Bot.Send(msg)
+			bot.getCode(&update)
 		}
 	}
 }
