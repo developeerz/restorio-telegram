@@ -9,9 +9,10 @@ import (
 
 func main() {
 	config.LoadConfig()
-	database.Connect()
 
-	userRepository := repository.NewRepository(database.DB)
+	db := database.Connect()
+	userRepository := repository.NewRepository(db)
+
 	bot := telegram.NewTelegramBot(userRepository)
 
 	bot.StartPolling()
