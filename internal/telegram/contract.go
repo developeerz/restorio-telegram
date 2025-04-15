@@ -1,6 +1,8 @@
 package telegram
 
-type Repository interface {
-	GetCodeByTelegram(telegram string) (int, error)
-	UpdateUserByTelegram(telegram string, telegramID int64) error
+type Cache interface {
+	PutUser(telegram string, userJSON []byte) error
+	PutVerificationCode(telegram string, code int) error
+	GetUser(telegram string) ([]byte, error)
+	GetVerificationCode(telegram string) (int, error)
 }

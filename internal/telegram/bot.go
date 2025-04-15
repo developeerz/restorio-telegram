@@ -7,12 +7,12 @@ import (
 	tele "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type Bot struct {
-	Bot        *tele.BotAPI
-	Repository Repository
+type bot struct {
+	bot   *tele.BotAPI
+	cache Cache
 }
 
-func NewTelegramBot(repo Repository) *Bot {
+func NewTelegramBot(repo Repository) *bot {
 	botToken := config.ConfigService.BotToken
 
 	bot, err := tele.NewBotAPI(botToken)
@@ -20,16 +20,16 @@ func NewTelegramBot(repo Repository) *Bot {
 		log.Fatal(err)
 	}
 
-	return &Bot{
-		Bot:        bot,
+	return &bot{
+		bot:        bot,
 		Repository: repo,
 	}
 }
 
-func (bot *Bot) StartPolling() {
+func (bot *bot) StartPolling() {
 	updateConfig := tele.NewUpdate(0)
 	updateConfig.Timeout = 60
-	updates := bot.Bot.GetUpdatesChan(updateConfig)
+	updates := bot.bot.GetUpdatesChan(updateConfig)
 
 	for update := range updates {
 		if update.Message == nil {
