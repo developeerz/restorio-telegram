@@ -1,55 +1,80 @@
 package telegram
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 
+	"github.com/developeerz/restorio-auth/pkg/repository/redis"
 	tele "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (bot *Bot) cmdStart(update *tele.Update) {
+func (bot *Bot) cmdStart(update *tele.Update) error {
 	msg := tele.NewMessage(update.Message.Chat.ID, "Добро пожаловать в Restorio!")
 	msg.ReplyMarkup = getMainMenuKeyboard()
 
-	_, err := bot.Bot.Send(msg)
+	_, err := bot.bot.Send(msg)
 	if err != nil {
-		log.Printf("cmdStart(): %v", err)
+		return err
 	}
+
+	return nil
 }
 
-func (bot *Bot) getCode(update *tele.Update) {
+func (bot *Bot) getCode(update *tele.Update) error {
+	var user redis.User
 	telegram := update.Message.From.UserName
 	telegramID := update.Message.From.ID
 
-	code, err := bot.Repository.GetCodeByTelegram(telegram)
+	code, err := bot.cache.GetVerificationCode(telegram)
 	if err != nil {
 		msg := tele.NewMessage(update.Message.Chat.ID, "Вы уже зарегистрированы!")
 
-		_, err = bot.Bot.Send(msg)
+		_, err = bot.bot.Send(msg)
 		if err != nil {
-			log.Printf("getCode(%d): %v", telegramID, err)
+			return fmt.Errorf("bot send: %w", err)
 		}
 
 		msg.ReplyMarkup = getMainMenuKeyboard()
+
+		return fmt.Errorf("cannot get verivication code with telegram (%s)", telegram)
 	}
 
-	err = bot.Repository.UpdateUserByTelegram(telegram, telegramID)
+	userBytes, err := bot.cache.GetUser(telegram)
 	if err != nil {
-		log.Printf("UpdateUserByTelegram(%s, %d): %v", telegram, telegramID, err)
+		return fmt.Errorf("redis: %w", err)
+	}
+
+	err = json.Unmarshal(userBytes, &user)
+	if err != nil {
+		return fmt.Errorf("json unmarshal: %w", err)
+	}
+
+	user.TelegramID = telegramID
+
+	userBytesUpd, err := json.Marshal(user)
+	if err != nil {
+		return fmt.Errorf("json marshal: %w", err)
+	}
+
+	err = bot.cache.PutUser(telegram, userBytesUpd)
+	if err != nil {
+		return fmt.Errorf("redis: %w", err)
 	}
 
 	msg := tele.NewMessage(update.Message.Chat.ID, "Ваш код:")
 
-	_, err = bot.Bot.Send(msg)
+	_, err = bot.bot.Send(msg)
 	if err != nil {
-		log.Printf("getCode(%d): %v", telegramID, err)
+		return fmt.Errorf("bot send: %w", err)
 	}
 
 	msg = tele.NewMessage(update.Message.Chat.ID, fmt.Sprintf("%d", code))
 	msg.ReplyMarkup = getMainMenuKeyboard()
 
-	_, err = bot.Bot.Send(msg)
+	_, err = bot.bot.Send(msg)
 	if err != nil {
-		log.Printf("getCode(%d): %v", telegramID, err)
+		return fmt.Errorf("bot send: %w", err)
 	}
+
+	return nil
 }
