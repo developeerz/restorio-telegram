@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -20,12 +21,12 @@ func (bot *Bot) cmdStart(update *tele.Update) error {
 	return nil
 }
 
-func (bot *Bot) getCode(update *tele.Update) error {
+func (bot *Bot) getCode(ctx context.Context, update *tele.Update) error {
 	var user redis.User
 	telegram := update.Message.From.UserName
 	telegramID := update.Message.From.ID
 
-	code, err := bot.cache.GetVerificationCode(telegram)
+	code, err := bot.cache.GetVerificationCode(ctx, telegram)
 	if err != nil {
 		msg := tele.NewMessage(update.Message.Chat.ID, "Вы уже зарегистрированы!")
 
@@ -39,7 +40,7 @@ func (bot *Bot) getCode(update *tele.Update) error {
 		return fmt.Errorf("cannot get verivication code with telegram (%s)", telegram)
 	}
 
-	userBytes, err := bot.cache.GetUser(telegram)
+	userBytes, err := bot.cache.GetUser(ctx, telegram)
 	if err != nil {
 		return fmt.Errorf("redis: %w", err)
 	}
@@ -56,7 +57,7 @@ func (bot *Bot) getCode(update *tele.Update) error {
 		return fmt.Errorf("json marshal: %w", err)
 	}
 
-	err = bot.cache.PutUser(telegram, userBytesUpd)
+	err = bot.cache.PutUser(ctx, telegram, userBytesUpd)
 	if err != nil {
 		return fmt.Errorf("redis: %w", err)
 	}

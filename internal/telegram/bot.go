@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/developeerz/restorio-telegram/config"
@@ -24,7 +25,7 @@ func NewTelegramBot(cache Cache) (*Bot, error) {
 	return &Bot{bot: bot, cache: cache}, nil
 }
 
-func (bot *Bot) StartPolling() {
+func (bot *Bot) StartPolling(ctx context.Context) {
 	var err error
 
 	updateConfig := tele.NewUpdate(0)
@@ -44,7 +45,7 @@ func (bot *Bot) StartPolling() {
 			}
 
 		case "Получить код":
-			err = bot.getCode(&update)
+			err = bot.getCode(ctx, &update)
 			if err != nil {
 				log.Error().AnErr("error", err).Send()
 			}

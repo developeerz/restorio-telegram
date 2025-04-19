@@ -7,6 +7,8 @@ github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XL
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/developeerz/restorio-auth v0.0.0-20250415170453-32f680b472e5 h1:kNSkbix86jnHaMziSeYgjTDsNkRwUgrfpSv0SK9gZqg=
 github.com/developeerz/restorio-auth v0.0.0-20250415170453-32f680b472e5/go.mod h1:p1Cszewy4zMUZAm0ozwqYz6j5ArWYR1F84aiXs5AlOY=
+github.com/developeerz/restorio-auth v0.0.0-20250419115208-e621ff1fe811 h1:Emay6JdWaW0eFUQSAlbcxwY3p8njl7ywqKbNOhtSVDs=
+github.com/developeerz/restorio-auth v0.0.0-20250419115208-e621ff1fe811/go.mod h1:p1Cszewy4zMUZAm0ozwqYz6j5ArWYR1F84aiXs5AlOY=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 h1:wG8n/XJQ07TmjbITcGiUaOtXxdrINDz1b0J1w0SzqDc=
