@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/developeerz/restorio-telegram/config"
 	"github.com/developeerz/restorio-telegram/internal/telegram"
 	"github.com/rs/zerolog/log"
@@ -10,6 +12,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	config.LoadConfig()
 
 	err := logger.InitLogger(config.ConfigService.ServiceName)
@@ -29,5 +33,5 @@ func main() {
 		log.Fatal().AnErr("error", err).Send()
 	}
 
-	bot.StartPolling()
+	bot.StartPolling(ctx)
 }
