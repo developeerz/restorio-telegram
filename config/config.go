@@ -20,5 +20,8 @@ func LoadConfig() {
 		log.Info().Msgf("load dotenv: %v", err)
 	}
 
-	ConfigService = Config{BotToken: os.Getenv("BOT_TOKEN")}
+	ConfigService = Config{
+		BotToken:    os.Getenv("BOT_TOKEN"),
+		ServiceName: os.Getenv("SERVICE_NAME"),
+	}
 }
