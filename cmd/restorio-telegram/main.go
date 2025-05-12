@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/developeerz/restorio-telegram/config"
+	"github.com/developeerz/restorio-telegram/internal/kafka"
 	"github.com/developeerz/restorio-telegram/internal/telegram"
 	"github.com/rs/zerolog/log"
 
@@ -14,9 +15,12 @@ import (
 func main() {
 	ctx := context.Background()
 
-	config.LoadConfig()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal().AnErr("error", err).Send()
+	}
 
-	err := logger.InitLogger(config.ConfigService.ServiceName)
+	err = logger.InitLogger(cfg.ServiceName())
 	if err != nil {
 		log.Fatal().AnErr("error", err).Send()
 	}
@@ -28,10 +32,13 @@ func main() {
 
 	userCache := redis.NewUserCache(rdb)
 
-	bot, err := telegram.NewTelegramBot(userCache)
+	bot, err := telegram.NewTelegramBot(cfg.BotToken(), userCache)
 	if err != nil {
 		log.Fatal().AnErr("error", err).Send()
 	}
 
+	kafka := kafka.New(bot, cfg.Brokers(), cfg.Topic())
+
+	go kafka.ReadLoop(ctx)
 	bot.StartPolling(ctx)
 }
