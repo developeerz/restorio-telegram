@@ -3,8 +3,8 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"sync"
 
-	"github.com/developeerz/restorio-telegram/config"
 	tele "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rs/zerolog/log"
 )
@@ -12,17 +12,20 @@ import (
 type Bot struct {
 	bot   *tele.BotAPI
 	cache Cache
+	lock  sync.Locker
 }
 
-func NewTelegramBot(cache Cache) (*Bot, error) {
-	botToken := config.ConfigService.BotToken
-
+func NewTelegramBot(botToken string, cache Cache) (*Bot, error) {
 	bot, err := tele.NewBotAPI(botToken)
 	if err != nil {
 		return nil, fmt.Errorf("new bot: %w", err)
 	}
 
-	return &Bot{bot: bot, cache: cache}, nil
+	return &Bot{
+		bot:   bot,
+		cache: cache,
+		lock:  &sync.Mutex{},
+	}, nil
 }
 
 func (bot *Bot) StartPolling(ctx context.Context) {
@@ -45,7 +48,7 @@ func (bot *Bot) StartPolling(ctx context.Context) {
 			}
 
 		case "Получить код":
-			err = bot.getCode(ctx, &update)
+			err = bot.sendCode(ctx, &update)
 			if err != nil {
 				log.Error().AnErr("error", err).Send()
 			}
