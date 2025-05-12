@@ -6,7 +6,9 @@ import (
 	"fmt"
 
 	"github.com/developeerz/restorio-auth/pkg/repository/redis"
+	"github.com/developeerz/restorio-reserving/reserving-service/pkg/models"
 	tele "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func (bot *Bot) cmdStart(update *tele.Update) error {
@@ -21,14 +23,14 @@ func (bot *Bot) cmdStart(update *tele.Update) error {
 	return nil
 }
 
-func (bot *Bot) getCode(ctx context.Context, update *tele.Update) error {
+func (bot *Bot) sendCode(ctx context.Context, update *tele.Update) error {
 	var user redis.User
 	telegram := update.Message.From.UserName
 	telegramID := update.Message.From.ID
 
 	code, err := bot.cache.GetVerificationCode(ctx, telegram)
 	if err != nil {
-		msg := tele.NewMessage(update.Message.Chat.ID, "Вы уже зарегистрированы!")
+		msg := tele.NewMessage(update.Message.Chat.ID, "Не могу найти код...")
 
 		_, err = bot.bot.Send(msg)
 		if err != nil {
@@ -78,4 +80,24 @@ func (bot *Bot) getCode(ctx context.Context, update *tele.Update) error {
 	}
 
 	return nil
+}
+
+func (bot *Bot) Notify(payload *models.PayloadTelegram) {
+	bot.lock.Lock()
+
+	message := fmt.Sprintf(
+		"Вы бронировали столик %s в %s по адресу %s\nВремя брони %s",
+		payload.TableNumber,
+		payload.RestaurantName,
+		payload.RestaurantAddress,
+		payload.ReservationTime,
+	)
+	msg := tele.NewMessage(int64(payload.TelegramID), message)
+
+	_, err := bot.bot.Send(msg)
+	if err != nil {
+		log.Error().AnErr("bot notify err: %w", err)
+	}
+
+	bot.lock.Unlock()
 }
